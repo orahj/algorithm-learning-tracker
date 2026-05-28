@@ -255,14 +255,21 @@ npm.cmd run preview
 
 ## Deployment Notes
 
-The frontend can be deployed to Vercel, Netlify, or any static host using:
+The recommended cheap one-platform deployment target is Railway.
+
+Use one Railway project with three services:
 
 ```txt
-Build command: npm run build
-Output directory: dist
+frontend   React/Vite app
+api        NestJS server from server/
+postgres   Railway Postgres
 ```
 
-The backend should be deployed separately as a Node/NestJS service. For production, replace SQLite with a managed database such as PostgreSQL and disable TypeORM `synchronize`.
+See the full Railway guide:
+
+```txt
+docs/railway-deployment.md
+```
 
 ## Local Storage Note
 
