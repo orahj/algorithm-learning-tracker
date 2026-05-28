@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+server/node_modules/
+backend/
+
+# Build output
+dist/
+server/dist/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+server/.env
+server/.env.local
+server/.env.*.local
+
+# Local databases and generated data
+server/data/*.sqlite
+server/data/*.sqlite-*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor/session files
+*.session.sql
+.DS_Store
+Thumbs.db

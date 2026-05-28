@@ -1,0 +1,13 @@
+{
+    "deno.enable": false,
+    "typescript.tsdk": "server/node_modules/typescript/lib",
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "Algorithm Tracker SQLite",
+            "database": "${workspaceFolder:algorithm-learning-tracker}/server/data/tracker.sqlite"
+        }
+    ]
+}
