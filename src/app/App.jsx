@@ -9,6 +9,7 @@ import { ProblemBank } from '../features/problem-bank/ProblemBank';
 import { ReviewQueue } from '../features/review-queue/ReviewQueue';
 import { SettingsPage } from '../features/settings/SettingsPage';
 import { AuthPage } from '../features/auth/AuthPage';
+import { LandingPage } from '../features/landing/LandingPage';
 import { useAuth } from '../state/AuthProvider';
 import { useTrackerState } from '../state/TrackerProvider';
 
@@ -36,6 +37,7 @@ export function App() {
   const data = useTrackerState();
   const [active, setActive] = useState('Dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [publicView, setPublicView] = useState('landing');
   const page = useMemo(() => getActivePage(active), [active]);
 
   if (status === 'loading') {
@@ -43,7 +45,11 @@ export function App() {
   }
 
   if (!isAuthenticated) {
-    return <AuthPage />;
+    if (publicView === 'auth') {
+      return <AuthPage onBack={() => setPublicView('landing')} />;
+    }
+
+    return <LandingPage onStart={() => setPublicView('auth')} onLogin={() => setPublicView('auth')} />;
   }
 
   return (

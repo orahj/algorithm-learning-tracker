@@ -3,7 +3,7 @@ import { Code2, Eye, EyeOff, LogIn, UserPlus } from 'lucide-react';
 import { API_BASE_URL } from '../../services/apiClient';
 import { useAuth } from '../../state/AuthProvider';
 
-export function AuthPage() {
+export function AuthPage({ onBack }) {
   const { login, register } = useAuth();
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ email: '', displayName: '', password: '' });
@@ -42,6 +42,8 @@ export function AuthPage() {
             <h1>Sign in to sync your practice data.</h1>
           </div>
         </div>
+
+        {onBack && <button className="auth-back" onClick={onBack}>Back to overview</button>}
 
         <div className="auth-tabs">
           <button className={mode === 'login' ? 'active' : ''} onClick={() => setMode('login')}>
