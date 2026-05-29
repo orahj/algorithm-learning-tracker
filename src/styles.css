@@ -35,6 +35,7 @@ body { margin: 0; background: var(--bg); color: var(--text); }
 a { color: var(--primary); text-decoration: none; }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .65; }
 }
 
 @layer components {
@@ -63,10 +64,11 @@ main { min-width: 0; }
 .auth-panel { width: min(100%, 460px); background: var(--panel); border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow); padding: 24px; }
 .auth-brand { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; }
 .auth-brand h1 { margin: 6px 0 0; font-size: 28px; line-height: 1.12; }
-.auth-back { border: 0; background: transparent; color: var(--primary-dark); font-weight: 800; padding: 0; margin: -6px 0 16px; }
+.auth-back { border: 0; background: transparent; color: var(--primary-dark); font-weight: 900; padding: 0; margin: -6px 0 16px; }
+.auth-back:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
 .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: #f8faf9; border: 1px solid var(--line); border-radius: 16px; padding: 6px; margin-bottom: 18px; }
-.auth-tabs button { border: 0; border-radius: 12px; padding: 10px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); background: transparent; font-weight: 800; }
-.auth-tabs button.active { background: white; color: var(--primary); box-shadow: 0 8px 18px rgba(15, 23, 42, .06); }
+.auth-tabs button { border: 0; border-radius: 10px; padding: 10px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); background: transparent; font-weight: 900; transition: background .18s ease, color .18s ease, box-shadow .18s ease; }
+.auth-tabs button.active { background: white; color: var(--primary-dark); box-shadow: 0 8px 18px rgba(15, 23, 42, .08); }
 .auth-form { display: grid; gap: 14px; }
 .auth-error { margin: 0; color: var(--danger); font-weight: 700; font-size: 14px; }
 .auth-submit { width: 100%; margin-top: 2px; }
@@ -82,7 +84,7 @@ main { min-width: 0; }
 .landing-copy h1 { max-width: 780px; margin: 12px 0 18px; font-size: clamp(44px, 7vw, 82px); line-height: .95; letter-spacing: -0.06em; color: var(--ink); }
 .landing-copy p { max-width: 680px; margin: 0; color: var(--muted); font-size: 18px; line-height: 1.7; }
 .landing-cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-.landing-cta { min-height: 48px; }
+.landing-cta { min-height: 50px; padding-inline: 20px; }
 .landing-proof { display: flex; flex-wrap: wrap; gap: 12px 18px; margin-top: 24px; color: var(--muted); font-weight: 800; font-size: 14px; }
 .landing-proof span { display: inline-flex; align-items: center; gap: 6px; }
 .landing-proof svg { color: var(--primary-dark); }
@@ -164,16 +166,51 @@ input, select, textarea { width: 100%; border: 1px solid var(--line); border-rad
 input:focus, select:focus, textarea:focus { border-color: #5eead4; box-shadow: 0 0 0 4px rgba(204, 251, 241, .9); }
 .password-field { position: relative; }
 .password-field input { padding-right: 46px; }
-.password-toggle { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); width: 34px; height: 34px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); display: grid; place-items: center; }
+.password-toggle { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); width: 34px; height: 34px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); display: grid; place-items: center; transition: background .18s ease, color .18s ease, transform .18s ease; }
 .password-toggle:hover { background: var(--primary-soft); color: var(--primary-dark); }
 textarea { min-height: 90px; resize: vertical; }
 .full { margin-bottom: 14px; }
-.primary, .ghost, .danger, .icon-btn, .file-button { border: 0; border-radius: 14px; padding: 11px 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; }
-.primary { background: var(--primary); color: white; }
-.primary:hover { background: var(--primary-dark); }
-.ghost { background: #f8faf9; color: var(--text); border: 1px solid var(--line); }
-.danger { background: var(--danger-soft); color: var(--danger); }
-.icon-btn { background: transparent; color: var(--danger); padding: 8px; }
+.primary, .ghost, .danger, .icon-btn, .file-button {
+  border-radius: 11px;
+  padding: 11px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 900;
+  line-height: 1;
+  min-height: 42px;
+  border: 1px solid transparent;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease, color .18s ease;
+}
+.primary {
+  background: linear-gradient(180deg, #1fcdbc 0%, var(--primary) 46%, var(--primary-dark) 100%);
+  color: #052f2b;
+  border-color: rgba(15, 118, 110, .42);
+  box-shadow: 0 14px 30px rgba(20, 184, 166, .28), inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+.primary:hover { transform: translateY(-1px); box-shadow: 0 18px 38px rgba(20, 184, 166, .34), inset 0 1px 0 rgba(255, 255, 255, .38); }
+.primary:active, .ghost:active, .danger:active { transform: translateY(0); box-shadow: none; }
+.ghost {
+  background: rgba(255, 255, 255, .72);
+  color: var(--ink);
+  border-color: #cfd9d5;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, .06);
+}
+.ghost:hover { background: white; border-color: #99b4ad; transform: translateY(-1px); box-shadow: 0 12px 28px rgba(15, 23, 42, .09); }
+.danger {
+  background: linear-gradient(180deg, #fff1f2 0%, var(--danger-soft) 100%);
+  color: #b91c1c;
+  border-color: #fecaca;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, .10);
+}
+.danger:hover { transform: translateY(-1px); border-color: #fca5a5; box-shadow: 0 12px 28px rgba(239, 68, 68, .16); }
+.icon-btn { background: transparent; color: var(--danger); padding: 8px; min-height: 34px; border-radius: 9px; }
+.icon-btn:hover { background: var(--danger-soft); }
+.primary:focus-visible, .ghost:focus-visible, .danger:focus-visible, .icon-btn:focus-visible, .password-toggle:focus-visible, .auth-tabs button:focus-visible {
+  outline: 3px solid rgba(20, 184, 166, .28);
+  outline-offset: 2px;
+}
 .file-button input { display: none; }
 .button-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 
