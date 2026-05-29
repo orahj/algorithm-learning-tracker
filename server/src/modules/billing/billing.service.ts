@@ -89,7 +89,8 @@ export class BillingService {
     const planEnvName = paystackPlanEnvByPlan[plan];
     const paystackPlan = planEnvName ? this.configService.get<string>(planEnvName) : undefined;
     const amount = planPricesInKobo[plan];
-    if (!paystackPlan && !amount) throw new BadRequestException(`Missing Paystack plan or amount for plan: ${plan}`);
+    if (!paystackPlan) throw new BadRequestException(`Missing Paystack subscription plan for: ${plan}`);
+    if (!amount) throw new BadRequestException(`Missing Paystack amount for plan: ${plan}`);
 
     const response = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
