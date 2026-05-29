@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  BrainCircuit,
   ClipboardList,
   Code2,
   Database,
@@ -18,6 +19,7 @@ const navItems = [
   ['Problem Bank', Database],
   ['Review Queue', RotateCcw],
   ['Notes', NotebookPen],
+  ['AI Coach', BrainCircuit],
   ['Settings', Settings]
 ];
 

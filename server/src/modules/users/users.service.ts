@@ -22,6 +22,10 @@ export class UsersService {
     return this.usersRepository.findByStripeSubscriptionId(stripeSubscriptionId);
   }
 
+  findByPaystackCustomerCode(paystackCustomerCode: string) {
+    return this.usersRepository.findByPaystackCustomerCode(paystackCustomerCode);
+  }
+
   createLocalUser(input: CreateLocalUserInput) {
     return this.usersRepository.createLocalUser(input);
   }
@@ -37,6 +41,9 @@ export class UsersService {
       subscriptionStatus?: SubscriptionStatus;
       stripeCustomerId?: string;
       stripeSubscriptionId?: string;
+      paystackCustomerCode?: string;
+      paystackSubscriptionCode?: string;
+      paystackEmailToken?: string;
       subscriptionCurrentPeriodEnd?: Date;
     }
   ) {

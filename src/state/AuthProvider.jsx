@@ -87,6 +87,12 @@ export function AuthProvider({ children }) {
         setUser(null);
         setStatus('guest');
       },
+      async refreshUser() {
+        if (!token) return null;
+        const response = await getCurrentUser(token);
+        setUser(response.user);
+        return response.user;
+      },
       setError
     }),
     [error, status, token, user]

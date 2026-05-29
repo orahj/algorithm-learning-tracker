@@ -11,8 +11,8 @@ This repository contains:
 - SQLite local development storage through TypeORM
 - Email/password authentication with JWT
 - Google OAuth scaffolding for later third-party login
-- Stripe-ready subscription scaffolding
-- AI coach endpoint scaffolding powered by OpenAI when configured
+- Paystack-first subscription scaffolding with Stripe fallback
+- AI coach screen and endpoint, with local mock mode until OpenAI is configured
 - Swagger API documentation for backend endpoints
 
 ## Features
@@ -49,6 +49,7 @@ Backend:
 - Passport/JWT
 - Google OAuth strategy
 - Swagger/OpenAPI
+- Paystack REST API
 - Stripe SDK
 - OpenAI SDK
 
@@ -76,7 +77,7 @@ server/
     database/          TypeORM database setup
     modules/
       auth/            Email/password auth, Google OAuth, JWT
-      billing/         Stripe checkout and webhook scaffolding
+      billing/         Paystack checkout, Stripe fallback, and webhook scaffolding
       coach/           AI coach prompt templates and endpoints
       tracker/         Daily logs, problems, notes APIs
       users/           User entity, service, repository
@@ -141,6 +142,11 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_CALLBACK_URL=http://localhost:4000/api/auth/google/callback
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
+AI_COACH_MOCK=true
+PAYSTACK_SECRET_KEY=
+PAYSTACK_PUBLIC_KEY=
+PAYSTACK_PLAN_AI_COACH=
+PAYSTACK_PLAN_PRO_INTERVIEW=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_PRICE_AI_COACH=
@@ -156,8 +162,8 @@ The NestJS backend lives in `server/`. It owns authentication and tracker data p
 Current backend modules:
 
 - `auth`: email/password register/login, Google OAuth, JWT issuing, and current-user endpoint
-- `billing`: Stripe checkout-session creation and webhook handling
-- `coach`: AI explanations with plan-based usage limits
+- `billing`: Paystack checkout initialization, Stripe fallback, and webhook handling
+- `coach`: AI explanations with plan-based usage limits and local mock responses
 - `users`: user entity, service, and repository
 - `tracker`: daily logs, problems, and topic notes APIs
 - `database`: TypeORM setup
@@ -218,7 +224,10 @@ GET    /api/auth/google/callback
 GET    /api/auth/me
 
 POST   /api/billing/checkout-session
+POST   /api/billing/paystack/verify
 POST   /api/billing/webhook
+POST   /api/billing/webhook/paystack
+POST   /api/billing/webhook/stripe
 
 POST   /api/coach/explain
 

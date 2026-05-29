@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { SubscriptionPlan, SubscriptionStatus } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
-import { stripePriceEnvByPlan } from './billing-plans';
+import { paystackPlanEnvByPlan, planPricesInKobo, stripePriceEnvByPlan } from './billing-plans';
 
 const Stripe = require('stripe');
 
@@ -27,6 +28,7 @@ function toSubscriptionStatus(status?: string): SubscriptionStatus {
 @Injectable()
 export class BillingService {
   private readonly stripe?: any;
+  private readonly paystackSecretKey?: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -36,9 +38,15 @@ export class BillingService {
     if (stripeSecretKey) {
       this.stripe = new Stripe(stripeSecretKey);
     }
+    this.paystackSecretKey = this.configService.get<string>('PAYSTACK_SECRET_KEY');
   }
 
   async createCheckoutSession(user: AuthenticatedUser, plan: SubscriptionPlan.AiCoach | SubscriptionPlan.ProInterview) {
+    if (this.paystackSecretKey) return this.createPaystackCheckout(user, plan);
+    return this.createStripeCheckout(user, plan);
+  }
+
+  private async createStripeCheckout(user: AuthenticatedUser, plan: SubscriptionPlan.AiCoach | SubscriptionPlan.ProInterview) {
     if (!this.stripe) throw new ServiceUnavailableException('Stripe is not configured');
 
     const priceEnvName = stripePriceEnvByPlan[plan];
@@ -68,7 +76,49 @@ export class BillingService {
       }
     });
 
-    return { url: session.url };
+    return { provider: 'stripe', url: session.url };
+  }
+
+  private async createPaystackCheckout(user: AuthenticatedUser, plan: SubscriptionPlan.AiCoach | SubscriptionPlan.ProInterview) {
+    if (!this.paystackSecretKey) throw new ServiceUnavailableException('Paystack is not configured');
+
+    const dbUser = await this.usersService.findById(user.id);
+    if (!dbUser) throw new BadRequestException('User not found');
+
+    const appUrl = this.configService.get<string>('CLIENT_URL') ?? 'http://localhost:5173';
+    const planEnvName = paystackPlanEnvByPlan[plan];
+    const paystackPlan = planEnvName ? this.configService.get<string>(planEnvName) : undefined;
+    const amount = planPricesInKobo[plan];
+    if (!paystackPlan && !amount) throw new BadRequestException(`Missing Paystack plan or amount for plan: ${plan}`);
+
+    const response = await fetch('https://api.paystack.co/transaction/initialize', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.paystackSecretKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: dbUser.email,
+        amount,
+        plan: paystackPlan,
+        callback_url: `${appUrl}/?checkout=success`,
+        metadata: {
+          userId: dbUser.id,
+          plan
+        }
+      })
+    });
+
+    const payload = await response.json();
+    if (!response.ok || !payload.status) {
+      throw new BadRequestException(payload.message || 'Unable to initialize Paystack checkout');
+    }
+
+    return {
+      provider: 'paystack',
+      url: payload.data.authorization_url,
+      reference: payload.data.reference
+    };
   }
 
   constructWebhookEvent(rawBody: Buffer, signature: string) {
@@ -78,7 +128,46 @@ export class BillingService {
     return this.stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   }
 
-  async handleWebhook(event: any) {
+  constructPaystackWebhookEvent(rawBody: Buffer, signature: string) {
+    if (!this.paystackSecretKey) throw new ServiceUnavailableException('Paystack is not configured');
+    const expected = createHmac('sha512', this.paystackSecretKey).update(rawBody).digest('hex');
+    const signatureBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expected);
+    if (signatureBuffer.length !== expectedBuffer.length || !timingSafeEqual(signatureBuffer, expectedBuffer)) {
+      throw new BadRequestException('Invalid Paystack webhook signature');
+    }
+    return JSON.parse(rawBody.toString('utf8'));
+  }
+
+  async verifyPaystackTransaction(user: AuthenticatedUser, reference: string) {
+    if (!this.paystackSecretKey) throw new ServiceUnavailableException('Paystack is not configured');
+
+    const response = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+      headers: {
+        Authorization: `Bearer ${this.paystackSecretKey}`
+      }
+    });
+
+    const payload = await response.json();
+    if (!response.ok || !payload.status) {
+      throw new BadRequestException(payload.message || 'Unable to verify Paystack transaction');
+    }
+
+    const charge = payload.data;
+    if (charge.status !== 'success') throw new BadRequestException('Paystack transaction was not successful');
+    if (charge.metadata?.userId && charge.metadata.userId !== user.id) {
+      throw new BadRequestException('Paystack transaction does not belong to this user');
+    }
+
+    await this.handlePaystackChargeSuccess(charge);
+    return {
+      verified: true,
+      plan: charge.metadata?.plan,
+      reference
+    };
+  }
+
+  async handleStripeWebhook(event: any) {
     switch (event.type) {
       case 'checkout.session.completed':
         await this.handleCheckoutCompleted(event.data.object);
@@ -86,6 +175,23 @@ export class BillingService {
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':
         await this.handleSubscriptionChanged(event.data.object);
+        break;
+      default:
+        break;
+    }
+
+    return { received: true };
+  }
+
+  async handlePaystackWebhook(event: any) {
+    switch (event.event) {
+      case 'charge.success':
+        await this.handlePaystackChargeSuccess(event.data);
+        break;
+      case 'subscription.create':
+      case 'subscription.enable':
+      case 'subscription.disable':
+        await this.handlePaystackSubscriptionChanged(event.data, event.event);
         break;
       default:
         break;
@@ -127,6 +233,34 @@ export class BillingService {
       stripeCustomerId: typeof subscription.customer === 'string' ? subscription.customer : user.stripeCustomerId,
       stripeSubscriptionId: subscription.id,
       subscriptionCurrentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : undefined
+    });
+  }
+
+  private async handlePaystackChargeSuccess(charge: any) {
+    const userId = charge.metadata?.userId;
+    const plan = charge.metadata?.plan as SubscriptionPlan | undefined;
+    if (!userId || !plan) return;
+
+    await this.usersService.updateBilling(userId, {
+      plan,
+      subscriptionStatus: SubscriptionStatus.Active,
+      paystackCustomerCode: charge.customer?.customer_code,
+      paystackSubscriptionCode: charge.subscription?.subscription_code,
+      paystackEmailToken: charge.authorization?.authorization_code
+    });
+  }
+
+  private async handlePaystackSubscriptionChanged(subscription: any, eventName: string) {
+    const customerCode = subscription.customer?.customer_code || subscription.customer;
+    const user = customerCode ? await this.usersService.findByPaystackCustomerCode(customerCode) : null;
+    if (!user) return;
+
+    const disabled = eventName === 'subscription.disable';
+    await this.usersService.updateBilling(user.id, {
+      plan: disabled ? SubscriptionPlan.Free : user.plan,
+      subscriptionStatus: disabled ? SubscriptionStatus.Canceled : SubscriptionStatus.Active,
+      paystackSubscriptionCode: subscription.subscription_code,
+      paystackEmailToken: subscription.email_token
     });
   }
 }

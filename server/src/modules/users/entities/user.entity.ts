@@ -66,6 +66,15 @@ export class User {
   stripeSubscriptionId?: string;
 
   @Column({ nullable: true })
+  paystackCustomerCode?: string;
+
+  @Column({ nullable: true })
+  paystackSubscriptionCode?: string;
+
+  @Column({ nullable: true })
+  paystackEmailToken?: string;
+
+  @Column({ nullable: true })
   subscriptionCurrentPeriodEnd?: Date;
 
   @Column({ type: 'integer', default: 0 })

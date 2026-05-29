@@ -39,6 +39,10 @@ export class UsersRepository {
     return this.repository.findOne({ where: { stripeSubscriptionId } });
   }
 
+  findByPaystackCustomerCode(paystackCustomerCode: string) {
+    return this.repository.findOne({ where: { paystackCustomerCode } });
+  }
+
   createLocalUser(input: CreateLocalUserInput) {
     return this.repository.save(
       this.repository.create({
@@ -81,6 +85,9 @@ export class UsersRepository {
       subscriptionStatus?: SubscriptionStatus;
       stripeCustomerId?: string;
       stripeSubscriptionId?: string;
+      paystackCustomerCode?: string;
+      paystackSubscriptionCode?: string;
+      paystackEmailToken?: string;
       subscriptionCurrentPeriodEnd?: Date;
     }
   ) {

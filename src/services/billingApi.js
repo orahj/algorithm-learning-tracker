@@ -7,3 +7,11 @@ export function createCheckoutSession(token, plan) {
     body: { plan }
   });
 }
+
+export function verifyPaystackTransaction(token, reference) {
+  return apiRequest('/billing/paystack/verify', {
+    method: 'POST',
+    token,
+    body: { reference }
+  });
+}

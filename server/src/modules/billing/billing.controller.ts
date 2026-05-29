@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
 import { BillingService } from './billing.service';
 import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
+import { VerifyPaystackTransactionDto } from './dto/verify-paystack-transaction.dto';
 
 @Controller('billing')
 @ApiTags('billing')
@@ -19,10 +20,29 @@ export class BillingController {
     return this.billingService.createCheckoutSession(user, dto.plan);
   }
 
+  @Post('paystack/verify')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  verifyPaystackTransaction(@CurrentUser() user: AuthenticatedUser, @Body() dto: VerifyPaystackTransactionDto) {
+    return this.billingService.verifyPaystackTransaction(user, dto.reference);
+  }
+
   @Post('webhook')
-  async webhook(@Req() request: Request & { rawBody?: Buffer }, @Headers('stripe-signature') signature?: string) {
+  async webhookStripeAlias(@Req() request: Request & { rawBody?: Buffer }, @Headers('stripe-signature') signature?: string) {
+    return this.webhookStripe(request, signature);
+  }
+
+  @Post('webhook/stripe')
+  async webhookStripe(@Req() request: Request & { rawBody?: Buffer }, @Headers('stripe-signature') signature?: string) {
     if (!request.rawBody || !signature) return { received: false };
     const event = this.billingService.constructWebhookEvent(request.rawBody, signature);
-    return this.billingService.handleWebhook(event);
+    return this.billingService.handleStripeWebhook(event);
+  }
+
+  @Post('webhook/paystack')
+  async webhookPaystack(@Req() request: Request & { rawBody?: Buffer }, @Headers('x-paystack-signature') signature?: string) {
+    if (!request.rawBody || !signature) return { received: false };
+    const event = this.billingService.constructPaystackWebhookEvent(request.rawBody, signature);
+    return this.billingService.handlePaystackWebhook(event);
   }
 }
