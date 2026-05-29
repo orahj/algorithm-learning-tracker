@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AuthProvider, User } from '../entities/user.entity';
+import { AuthProvider, SubscriptionPlan, SubscriptionStatus, User } from '../entities/user.entity';
 
 export type UpsertGoogleUserInput = {
   email: string;
@@ -29,6 +29,14 @@ export class UsersRepository {
 
   findByEmail(email: string) {
     return this.repository.findOne({ where: { email: email.toLowerCase() } });
+  }
+
+  findByStripeCustomerId(stripeCustomerId: string) {
+    return this.repository.findOne({ where: { stripeCustomerId } });
+  }
+
+  findByStripeSubscriptionId(stripeSubscriptionId: string) {
+    return this.repository.findOne({ where: { stripeSubscriptionId } });
   }
 
   createLocalUser(input: CreateLocalUserInput) {
@@ -64,5 +72,35 @@ export class UsersRepository {
         providerId: input.providerId
       })
     );
+  }
+
+  async updateBilling(
+    userId: string,
+    input: {
+      plan?: SubscriptionPlan;
+      subscriptionStatus?: SubscriptionStatus;
+      stripeCustomerId?: string;
+      stripeSubscriptionId?: string;
+      subscriptionCurrentPeriodEnd?: Date;
+    }
+  ) {
+    const user = await this.findById(userId);
+    if (!user) return null;
+    return this.repository.save({ ...user, ...input });
+  }
+
+  async resetAiUsageIfNeeded(user: User, period: string) {
+    if (user.aiCoachUsagePeriod === period) return user;
+
+    return this.repository.save({
+      ...user,
+      aiCoachUsagePeriod: period,
+      aiCoachUsageCount: 0
+    });
+  }
+
+  async incrementAiCoachUsage(userId: string) {
+    await this.repository.increment({ id: userId }, 'aiCoachUsageCount', 1);
+    return this.findById(userId);
   }
 }

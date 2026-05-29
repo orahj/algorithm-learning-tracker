@@ -11,6 +11,8 @@ This repository contains:
 - SQLite local development storage through TypeORM
 - Email/password authentication with JWT
 - Google OAuth scaffolding for later third-party login
+- Stripe-ready subscription scaffolding
+- AI coach endpoint scaffolding powered by OpenAI when configured
 - Swagger API documentation for backend endpoints
 
 ## Features
@@ -47,6 +49,8 @@ Backend:
 - Passport/JWT
 - Google OAuth strategy
 - Swagger/OpenAPI
+- Stripe SDK
+- OpenAI SDK
 
 ## Project Structure
 
@@ -72,6 +76,8 @@ server/
     database/          TypeORM database setup
     modules/
       auth/            Email/password auth, Google OAuth, JWT
+      billing/         Stripe checkout and webhook scaffolding
+      coach/           AI coach prompt templates and endpoints
       tracker/         Daily logs, problems, notes APIs
       users/           User entity, service, repository
 ```
@@ -133,6 +139,12 @@ JWT_EXPIRES_IN=7d
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_CALLBACK_URL=http://localhost:4000/api/auth/google/callback
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PRICE_AI_COACH=
+STRIPE_PRICE_PRO_INTERVIEW=
 ```
 
 Google auth is scaffolded but requires real Google OAuth credentials before it can complete the login flow. Email/password auth works without Google setup.
@@ -144,6 +156,8 @@ The NestJS backend lives in `server/`. It owns authentication and tracker data p
 Current backend modules:
 
 - `auth`: email/password register/login, Google OAuth, JWT issuing, and current-user endpoint
+- `billing`: Stripe checkout-session creation and webhook handling
+- `coach`: AI explanations with plan-based usage limits
 - `users`: user entity, service, and repository
 - `tracker`: daily logs, problems, and topic notes APIs
 - `database`: TypeORM setup
@@ -202,6 +216,11 @@ POST   /api/auth/login
 GET    /api/auth/google
 GET    /api/auth/google/callback
 GET    /api/auth/me
+
+POST   /api/billing/checkout-session
+POST   /api/billing/webhook
+
+POST   /api/coach/explain
 
 GET    /api/tracker
 GET    /api/tracker/daily-logs

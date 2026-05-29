@@ -3,4 +3,6 @@ export type AuthenticatedUser = {
   email: string;
   displayName: string;
   avatarUrl?: string;
+  plan?: string;
+  subscriptionStatus?: string;
 };

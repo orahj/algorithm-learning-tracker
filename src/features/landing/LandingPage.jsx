@@ -1,5 +1,6 @@
 import { ArrowRight, BrainCircuit, Check, Code2, GraduationCap, Sparkles, Target } from 'lucide-react';
 import heroImage from '../../assets/landing-hero.png';
+import { pricingTiers } from '../../data/pricingTiers';
 
 const learningLoop = [
   ['Plan', 'Follow a clear 90-day path instead of guessing what to study next.'],
@@ -13,30 +14,6 @@ const aiFeatures = [
   'Mistake analysis after failed attempts',
   'Beginner-friendly pattern explanations',
   'Personalized weak-topic practice'
-];
-
-const tiers = [
-  {
-    name: 'Free Tracker',
-    price: '$0',
-    description: 'Start the 3-month structure and build consistency.',
-    features: ['90-day roadmap', 'Daily logs', 'Problem bank', 'Review queue', 'Topic notes'],
-    featured: false
-  },
-  {
-    name: 'AI Coach',
-    price: '$9/mo',
-    description: 'Learn why solutions work and what pattern to use next.',
-    features: ['AI hints', 'Pattern breakdowns', 'Mistake diagnosis', 'Weekly study plan', 'Code walkthroughs'],
-    featured: true
-  },
-  {
-    name: 'Pro Interview',
-    price: '$19/mo',
-    description: 'Prepare deeply with feedback, repetition, and interview mode.',
-    features: ['Mock interviews', 'Advanced analytics', 'Unlimited review plans', 'Multi-language coaching', 'Priority AI usage'],
-    featured: false
-  }
 ];
 
 export function LandingPage({ onStart, onLogin }) {
@@ -119,13 +96,14 @@ export function LandingPage({ onStart, onLogin }) {
           <h2>Start free, grow into coaching.</h2>
         </div>
         <div className="pricing-grid">
-          {tiers.map((tier) => (
+          {pricingTiers.map((tier) => (
             <article className={`pricing-card ${tier.featured ? 'featured' : ''}`} key={tier.name}>
               <div className="tier-icon">
                 {tier.name === 'Free Tracker' ? <Target size={20} /> : tier.name === 'AI Coach' ? <BrainCircuit size={20} /> : <GraduationCap size={20} />}
               </div>
               <h3>{tier.name}</h3>
               <strong>{tier.price}</strong>
+              <small>{tier.interval}</small>
               <p>{tier.description}</p>
               <ul>
                 {tier.features.map((feature) => (

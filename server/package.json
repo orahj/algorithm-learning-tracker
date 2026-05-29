@@ -24,6 +24,7 @@
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
+    "openai": "^6.39.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
@@ -31,6 +32,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "sqlite3": "^5.1.7",
+    "stripe": "^22.2.0",
     "swagger-ui-express": "^5.0.1",
     "typeorm": "^0.3.28"
   },

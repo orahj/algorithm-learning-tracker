@@ -110,6 +110,7 @@ main { min-width: 0; }
 .tier-icon { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary-dark); }
 .pricing-card h3 { margin: 18px 0 8px; font-size: 22px; }
 .pricing-card strong { display: block; font-size: 36px; letter-spacing: -0.05em; color: var(--ink); }
+.pricing-card small { color: var(--muted); font-weight: 800; }
 .pricing-card p { color: var(--muted); line-height: 1.55; min-height: 50px; }
 .pricing-card ul { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 10px; color: var(--text); }
 .pricing-card li { display: flex; align-items: center; gap: 8px; }

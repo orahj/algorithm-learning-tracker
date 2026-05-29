@@ -15,6 +15,21 @@ export enum AuthProvider {
   Google = 'google'
 }
 
+export enum SubscriptionPlan {
+  Free = 'free',
+  AiCoach = 'ai_coach',
+  ProInterview = 'pro_interview'
+}
+
+export enum SubscriptionStatus {
+  Free = 'free',
+  Active = 'active',
+  Trialing = 'trialing',
+  PastDue = 'past_due',
+  Canceled = 'canceled',
+  Incomplete = 'incomplete'
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -37,6 +52,27 @@ export class User {
 
   @Column({ nullable: true })
   passwordHash?: string;
+
+  @Column({ type: 'text', default: SubscriptionPlan.Free })
+  plan!: SubscriptionPlan;
+
+  @Column({ type: 'text', default: SubscriptionStatus.Free })
+  subscriptionStatus!: SubscriptionStatus;
+
+  @Column({ nullable: true })
+  stripeCustomerId?: string;
+
+  @Column({ nullable: true })
+  stripeSubscriptionId?: string;
+
+  @Column({ nullable: true })
+  subscriptionCurrentPeriodEnd?: Date;
+
+  @Column({ type: 'integer', default: 0 })
+  aiCoachUsageCount!: number;
+
+  @Column({ type: 'text', nullable: true })
+  aiCoachUsagePeriod?: string;
 
   @CreateDateColumn()
   createdAt!: Date;

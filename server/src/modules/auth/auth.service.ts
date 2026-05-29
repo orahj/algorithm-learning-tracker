@@ -60,12 +60,16 @@ export class AuthService {
     email: string;
     displayName: string;
     avatarUrl?: string;
+    plan?: string;
+    subscriptionStatus?: string;
   }): AuthenticatedUser {
     return {
       id: user.id,
       email: user.email,
       displayName: user.displayName,
-      avatarUrl: user.avatarUrl
+      avatarUrl: user.avatarUrl,
+      plan: 'plan' in user ? user.plan : undefined,
+      subscriptionStatus: 'subscriptionStatus' in user ? user.subscriptionStatus : undefined
     };
   }
 }
