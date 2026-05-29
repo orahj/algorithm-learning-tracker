@@ -43,7 +43,7 @@ export function AuthPage({ onBack }) {
           </div>
         </div>
 
-        {onBack && <button className="auth-back" onClick={onBack}>Back to overview</button>}
+        {onBack && <button className="auth-back" onClick={onBack}>Back to landing page</button>}
 
         <div className="auth-tabs">
           <button className={mode === 'login' ? 'active' : ''} onClick={() => setMode('login')}>

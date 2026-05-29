@@ -40,6 +40,13 @@ export function App() {
   const [publicView, setPublicView] = useState('landing');
   const page = useMemo(() => getActivePage(active), [active]);
 
+  function handleLogout() {
+    logout();
+    setActive('Dashboard');
+    setSidebarOpen(false);
+    setPublicView('landing');
+  }
+
   if (status === 'loading') {
     return <main className="auth-page"><p className="muted">Loading your workspace...</p></main>;
   }
@@ -56,7 +63,7 @@ export function App() {
     <div className="app-shell">
       <Sidebar active={active} setActive={setActive} open={sidebarOpen} setOpen={setSidebarOpen} />
       <main>
-        <Topbar targetDailyMinutes={data.targetDailyMinutes} user={user} onLogout={logout} />
+        <Topbar targetDailyMinutes={data.targetDailyMinutes} user={user} onLogout={handleLogout} />
         {page}
       </main>
     </div>
